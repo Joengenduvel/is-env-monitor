@@ -1,0 +1,17 @@
+@startuml
+
+node "device" as device{
+  component "CO2 Sensor" as sensor
+  component "ESP8266 - nodeMcu" as mcu
+}
+
+node "monitoring" as monitoring{
+  component "Timeseries DB" as db
+  component "Dashboard" as dashboard
+}
+
+sensor -> mcu : I2C
+mcu -> db : HTTPS
+db -> dashboard
+
+@enduml
