@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="99px" preserveAspectRatio="none" style="width:781px;height:99px;background:#FFFFFF;" version="1.1" viewBox="0 0 781 99" width="781px" zoomAndPan="magnify"><defs><filter height="300%" id="f1rrluff6ao3gw" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[405d0ec63eaa964b5569457e2b7115d4]
+cluster device--><polygon fill="#FFFFFF" filter="url(#f1rrluff6ao3gw)" points="16,16,26,6,394,6,394,82,384,92,16,92,16,16" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="384" x2="394" y1="16" y2="6"/><line style="stroke:#000000;stroke-width:1.5;" x1="16" x2="384" y1="16" y2="16"/><line style="stroke:#000000;stroke-width:1.5;" x1="384" x2="384" y1="16" y2="92"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="52" x="175" y="31.9951">device</text><!--MD5=[11e4ccc881db60eff8b15d16aceed072]
+cluster monitoring--><polygon fill="#FFFFFF" filter="url(#f1rrluff6ao3gw)" points="455,16,465,6,764,6,764,82,754,92,455,92,455,16" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="754" x2="764" y1="16" y2="6"/><line style="stroke:#000000;stroke-width:1.5;" x1="455" x2="754" y1="16" y2="16"/><line style="stroke:#000000;stroke-width:1.5;" x1="754" x2="754" y1="16" y2="92"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="85" x="563" y="31.9951">monitoring</text><!--MD5=[88723051146da09166554e42ec8ff111]
+entity sensor--><rect fill="#FEFECE" filter="url(#f1rrluff6ao3gw)" height="46.2969" style="stroke:#A80036;stroke-width:1.5;" width="123" x="24.5" y="38"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="127.5" y="43"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="125.5" y="45"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="125.5" y="49"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="39.5" y="70.9951">CO2 Sensor</text><!--MD5=[32212cae6d0d0cef86b81fed9b864ca2]
+entity mcu--><rect fill="#FEFECE" filter="url(#f1rrluff6ao3gw)" height="46.2969" style="stroke:#A80036;stroke-width:1.5;" width="181" x="204.5" y="38"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="365.5" y="43"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="363.5" y="45"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="363.5" y="49"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141" x="219.5" y="70.9951">ESP8266 - nodeMcu</text><!--MD5=[7468467f3b6b392f1d176d828c753b77]
+entity db--><rect fill="#FEFECE" filter="url(#f1rrluff6ao3gw)" height="46.2969" style="stroke:#A80036;stroke-width:1.5;" width="141" x="463.5" y="38"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="584.5" y="43"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="582.5" y="45"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="582.5" y="49"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101" x="478.5" y="70.9951">Timeseries DB</text><!--MD5=[4b4aa12fd50f56bd13a7a0170aaccc36]
+entity dashboard--><rect fill="#FEFECE" filter="url(#f1rrluff6ao3gw)" height="46.2969" style="stroke:#A80036;stroke-width:1.5;" width="116" x="640" y="38"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="736" y="43"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="734" y="45"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="734" y="49"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76" x="655" y="70.9951">Dashboard</text><!--MD5=[eaef6e9f5489d12c7bcc3db18f124cb3]
+link sensor to mcu--><path d="M147.5765,61 C163.7265,61 181.5319,61 199.0172,61 " fill="none" id="sensor-to-mcu" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="204.4312,61,195.4312,57,199.4312,61,195.4312,65,204.4312,61" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="20" x="166" y="54.0669">I2C</text><!--MD5=[483bd433deec395431fbffb42ded0566]
+link mcu to db--><path d="M385.6964,61 C409.6363,61 435.2161,61 458.2731,61 " fill="none" id="mcu-to-db" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="463.4594,61,454.4594,57,458.4594,61,454.4594,65,463.4594,61" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="41" x="404" y="77.0669">HTTPS</text><!--MD5=[2eb638d52cce756dadee557549e45cd7]
+link db to dashboard--><path d="M604.7891,61 C614.7109,61 624.6328,61 634.5547,61 " fill="none" id="db-to-dashboard" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="639.7432,61,630.7432,57,634.7432,61,630.7432,65,639.7432,61" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[a8688f17e9a064ae675dbb48991ec43b]
+@startuml
+node "device" as device{
+  component "CO2 Sensor" as sensor
+  component "ESP8266 - nodeMcu" as mcu
+}
+
+node "monitoring" as monitoring{
+  component "Timeseries DB" as db
+  component "Dashboard" as dashboard
+}
+
+sensor -> mcu : I2C
+mcu -> db : HTTPS
+db -> dashboard
+@enduml
+
+PlantUML version 1.2021.7(Sun May 23 12:40:07 UTC 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
