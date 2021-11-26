@@ -23,6 +23,12 @@ there are in general 2 types of sensors:
 https://nl.aliexpress.com/item/4000160133215.html?spm=a2g0o.productlist.0.0.7c267b5eKPaJMo&algo_pvid=ac495fbb-53c5-4d0c-bb6c-1a62ec1a9013&algo_exp_id=ac495fbb-53c5-4d0c-bb6c-1a62ec1a9013-0&pdp_ext_f=%7B%22sku_id%22%3A%2210000000516093098%22%7D
 
 ## Monitoring
+For the monitoring solution, multiple options are available:
+* Grafana
+* Influxdb + custom dashboard
+* Prometheus
+* Azure application insights
+* ...
 ### Timeseries Database
 
 ### Dashboard
