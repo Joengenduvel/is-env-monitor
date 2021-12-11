@@ -103,11 +103,11 @@ int readCo2Ccs811() {
   }
 }
 
-int sendScd30Data() {
+int readScd30() {
   if (scd30Present && scd30.dataReady()) {
     if (scd30.read()) {
       logScd30Information();
-      return scd30.CO2
+      return scd30.CO2;
     } else {
       Serial.println("Failed to read scd30 sensor!");
       gotoSleep();
