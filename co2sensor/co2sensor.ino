@@ -1,18 +1,26 @@
-#define debug false
+#define debug true
 
 #include "credentials.h"
 #include <ESP8266WiFiMulti.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 ESP8266WiFiMulti wifiMulti;
+HTTPClient http;
+WiFiClient client;
 const uint32_t connectTimeoutMs = 5000;
 
 #include <Wire.h>
 #include <SparkFunCCS811.h>
+#include <Adafruit_SCD30.h>
 
 #define CCS811_ADDR 0x5B //Default I2C Address
 CCS811 myCCS811(CCS811_ADDR);
+Adafruit_SCD30  scd30;
 
 bool ccs811Present = false;
-bool sd30Present = false;
+bool scd30Present = false;
+
+String serverName = "http://ptsv2.com/";
 
 void setup() {
 
@@ -33,10 +41,16 @@ void setup() {
   {
     ccs811Present = true;
   } else {
-    Serial.print("CCS811 error. Please check wiring.");
+    Serial.print("CCS811 not found. Please check wiring.");
   }
 
-  if (!ccs811Present && !sd30Present) {
+  if (scd30.begin()){
+    scd30Present = true;
+  } else {
+    Serial.print("scd30 not found. Please check wiring.");
+  }
+
+  if (!ccs811Present && !scd30Present) {
     Serial.print("No Sensors found, going to sleep");
     gotoSleep();
   }
@@ -45,24 +59,48 @@ void setup() {
 void loop() {
   if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
     logConnectionStatus(true);
-    int co2 = readCo2Ccs811();
-    Serial.println(co2);
-
+    sendCvs811Data();
+    sendScd30Data();
   } else {
     logConnectionStatus(false);
   }
-  delay(1000);
+  delay(5000);
 }
 
-int readCo2Ccs811() {
+void sendCvs811Data() {
   if (ccs811Present) {
-    if (myCCS811.dataAvailable())
-    {
+    if (myCCS811.dataAvailable()) {
       myCCS811.readAlgorithmResults();
-      return myCCS811.getCO2();
-    } else if (myCCS811.checkForStatusError())
-    {
+      logCcs811Information();
+      
+      // SEND DATA HERE
+      
+    } else if (myCCS811.checkForStatusError()) {
       Serial.println("Failed to read ccs811 sensor!");
+      gotoSleep();
+    }
+  }
+}
+
+void sendScd30Data() {
+  if (scd30Present && scd30.dataReady()) {
+    if (scd30.read()) {
+      logScd30Information();
+      // SEND DATA HERE
+
+      http.begin(client, "http://ptsv2.com/t/9n61g-1639231375/post");
+      http.addHeader("Content-Type", "application/json");
+
+      String requestData= "{"
+        "\"temprature\":" + String(scd30.temperature) + ","
+        "\"humidity\":" + String(scd30.relative_humidity) + ","
+        "\"co2\":" + String(scd30.CO2) +
+        "}";
+      
+      // int httpResponseCode = http.POST(requestData);
+      // Serial.println(httpResponseCode);
+    } else {
+      Serial.println("Failed to read scd30 sensor!");
       gotoSleep();
     }
   }
@@ -79,6 +117,33 @@ void logConnectionStatus(bool connected) {
     else {
       Serial.println("WiFi not connected!");
     }
+  }
+}
+
+void logScd30Information() {
+  if (debug){
+    Serial.println("==== SCD30 ====");
+    Serial.print("Temperature: ");
+    Serial.print(scd30.temperature);
+    Serial.println(" degrees C");
+    
+    Serial.print("Relative Humidity: ");
+    Serial.print(scd30.relative_humidity);
+    Serial.println(" %");
+    
+    Serial.print("CO2: ");
+    Serial.print(scd30.CO2, 3);
+    Serial.println(" ppm");
+    Serial.println("===============");
+  }
+}
+
+void logCcs811Information(){
+  if (debug) {
+    Serial.println("==== CCS811 ====");
+    Serial.print("CCS811 CO2: ");
+    Serial.println(myCCS811.getCO2());
+    Serial.println("================");
   }
 }
 
