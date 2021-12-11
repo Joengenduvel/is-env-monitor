@@ -1,0 +1,10 @@
+groups:
+- name: co2
+  rules:
+  - alert: HighCO2
+    expr: co2_air_co2 > 200
+    for: 1s
+    labels:
+      severity: page
+    annotations:
+      summary: High CO2 in office
