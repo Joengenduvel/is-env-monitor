@@ -61,46 +61,40 @@ void setup() {
 
 void loop() {
   if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
+    //Set new hostname
+    WiFi.hostname(newHostname.c_str());
     logConnectionStatus(true);
-    Serial.printf("Default hostname: %s\n", WiFi.hostname().c_str());
-
-  //Set new hostname
-  WiFi.hostname(newHostname.c_str());
-
-  //Get Current Hostname
-  Serial.printf("New hostname: %s\n", WiFi.hostname().c_str());
-    co2 = readCo2Ccs811();
-    Serial.println(co2);
-
     http_server.handleClient();
-
   } else {
     logConnectionStatus(false);
   }
   delay(1000);
 }
 
-int readCo2Ccs811() {
+int readCo2() {
   if (ccs811Present) {
-    if (myCCS811.dataAvailable())
-    {
-      myCCS811.readAlgorithmResults();
-      return myCCS811.getCO2();
-    } else if (myCCS811.checkForStatusError())
-    {
-      Serial.println("Failed to read ccs811 sensor!");
-      gotoSleep();
-    }
+    return readCo2Ccs811();
+  }
+  return 0;
+}
+
+int readCo2Ccs811() {
+
+  if (myCCS811.dataAvailable())
+  {
+    myCCS811.readAlgorithmResults();
+    return myCCS811.getCO2();
+  } else if (myCCS811.checkForStatusError())
+  {
+    Serial.println("Failed to read ccs811 sensor!");
+    gotoSleep();
   }
 }
 
 void logConnectionStatus(bool connected) {
   if (debug) {
     if (connected) {
-      Serial.print("WiFi connected: ");
-      Serial.print(WiFi.SSID());
-      Serial.print(" ");
-      Serial.println(WiFi.localIP());
+      Serial.printf("WiFi connected: %s @ %s as %s\n", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), WiFi.hostname().c_str());
     }
     else {
       Serial.println("WiFi not connected!");
@@ -114,53 +108,53 @@ void gotoSleep() {
 }
 
 void setup_http_server() {
-    char message[128];
-    log("Setting up HTTP server");
-    http_server.on("/", HTTPMethod::HTTP_GET, handle_http_root);
-    http_server.on(HTTP_METRICS_ENDPOINT, HTTPMethod::HTTP_GET, handle_http_metrics);
-    http_server.onNotFound(handle_http_not_found);
-    http_server.begin();
+  char message[128];
+  log("Setting up HTTP server");
+  http_server.on("/", HTTPMethod::HTTP_GET, handle_http_root);
+  http_server.on(HTTP_METRICS_ENDPOINT, HTTPMethod::HTTP_GET, handle_http_metrics);
+  http_server.onNotFound(handle_http_not_found);
+  http_server.begin();
 }
 
 void handle_http_root() {
-    static size_t const BUFSIZE = 256;
-    static char const *response_template =
-        "Prometheus ESP8266 DHT Exporter by HON95.\n"
-        "\n"
-        "Project: https://github.com/HON95/prometheus-esp8266-dht-exporter\n"
-        "\n"
-        "Usage: %s\n";
-    char response[BUFSIZE];
-    snprintf(response, BUFSIZE, response_template, HTTP_METRICS_ENDPOINT);
-    http_server.send(200, "text/plain; charset=utf-8", response);
+  static size_t const BUFSIZE = 256;
+  static char const *response_template =
+    "Prometheus ESP8266 DHT Exporter by HON95.\n"
+    "\n"
+    "Project: https://github.com/HON95/prometheus-esp8266-dht-exporter\n"
+    "\n"
+    "Usage: %s\n";
+  char response[BUFSIZE];
+  snprintf(response, BUFSIZE, response_template, HTTP_METRICS_ENDPOINT);
+  http_server.send(200, "text/plain; charset=utf-8", response);
 }
 
 
 void handle_http_metrics() {
   log("sending metrics");
-    static size_t const BUFSIZE = 1024;
-    static char const *response_template =
-        "# HELP " PROM_NAMESPACE "_info Metadata about the device.\n"
-        "# TYPE " PROM_NAMESPACE "_info gauge\n"
-        "# UNIT " PROM_NAMESPACE "_info \n"
-        PROM_NAMESPACE "_info{version=\"%s\",board=\"%s\",sensor=\"%s\"} 1\n"
-        "# HELP " PROM_NAMESPACE "_air_co2 CO2 value.\n"
-        "# TYPE " PROM_NAMESPACE "_air_co2 gauge\n"
-        "# UNIT " PROM_NAMESPACE "_air_co2 co2\n"
-        PROM_NAMESPACE "_air_co2 %d\n";
-        
+  static size_t const BUFSIZE = 1024;
+  static char const *response_template =
+    "# HELP " PROM_NAMESPACE "_info Metadata about the device.\n"
+    "# TYPE " PROM_NAMESPACE "_info gauge\n"
+    "# UNIT " PROM_NAMESPACE "_info \n"
+    PROM_NAMESPACE "_info{version=\"%s\",board=\"%s\",sensor=\"%s\"} 1\n"
+    "# HELP " PROM_NAMESPACE "_air_co2 CO2 value.\n"
+    "# TYPE " PROM_NAMESPACE "_air_co2 gauge\n"
+    "# UNIT " PROM_NAMESPACE "_air_co2 co2\n"
+    PROM_NAMESPACE "_air_co2 %d\n";
 
-    char response[BUFSIZE];
-    snprintf(response, BUFSIZE, response_template, "1", "ESP8266", "CO2", co2);
-    http_server.send(200, "text/plain; charset=utf-8", response);
-    log(response);
+
+  char response[BUFSIZE];
+  snprintf(response, BUFSIZE, response_template, "1", "ESP8266", "CO2", readCo2());
+           http_server.send(200, "text/plain; charset=utf-8", response);
+           log(response);
 }
 
 void handle_http_not_found() {
-    http_server.send(404, "text/plain; charset=utf-8", "Not found.");
+  http_server.send(404, "text/plain; charset=utf-8", "Not found.");
 }
 
 
-void log(String message){
+void log(String message) {
   Serial.println(message);
 }
