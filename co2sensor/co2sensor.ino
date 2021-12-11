@@ -8,15 +8,17 @@ const uint32_t connectTimeoutMs = 5000;
 
 #include <Wire.h>
 #include <SparkFunCCS811.h>
+#include <Adafruit_SCD30.h>
 
 #define CCS811_ADDR 0x5B //Default I2C Address
 CCS811 myCCS811(CCS811_ADDR);
+Adafruit_SCD30  scd30;
 
 ESP8266WebServer http_server(9090);
 #include <ESP8266WebServer.h>
 
 bool ccs811Present = false;
-bool sd30Present = false;
+bool scd30Present = false;
 
 String newHostname = "Livingroom";
 
@@ -50,8 +52,14 @@ void setup() {
   } else {
     Serial.print("CCS811 error. Please check wiring.");
   }
+  
+  if (scd30.begin()){
+    scd30Present = true;
+  } else {
+    Serial.print("scd30 not found. Please check wiring.");
+  }
 
-  if (!ccs811Present && !sd30Present) {
+  if (!ccs811Present && !scd30Present) {
     Serial.print("No Sensors found, going to sleep");
     gotoSleep();
   }
@@ -72,6 +80,9 @@ void loop() {
 }
 
 int readCo2() {
+  if (scd30Present) {
+    return readScd30();
+  }
   if (ccs811Present) {
     return readCo2Ccs811();
   }
@@ -83,11 +94,24 @@ int readCo2Ccs811() {
   if (myCCS811.dataAvailable())
   {
     myCCS811.readAlgorithmResults();
+    logCcs811Information();
     return myCCS811.getCO2();
   } else if (myCCS811.checkForStatusError())
   {
     Serial.println("Failed to read ccs811 sensor!");
     gotoSleep();
+  }
+}
+
+int readScd30() {
+  if (scd30Present && scd30.dataReady()) {
+    if (scd30.read()) {
+      logScd30Information();
+      return scd30.CO2;
+    } else {
+      Serial.println("Failed to read scd30 sensor!");
+      gotoSleep();
+    }
   }
 }
 
@@ -154,6 +178,32 @@ void handle_http_not_found() {
   http_server.send(404, "text/plain; charset=utf-8", "Not found.");
 }
 
+void logScd30Information() {
+  if (debug){
+    Serial.println("==== SCD30 ====");
+    Serial.print("Temperature: ");
+    Serial.print(scd30.temperature);
+    Serial.println(" degrees C");
+    
+    Serial.print("Relative Humidity: ");
+    Serial.print(scd30.relative_humidity);
+    Serial.println(" %");
+    
+    Serial.print("CO2: ");
+    Serial.print(scd30.CO2, 3);
+    Serial.println(" ppm");
+    Serial.println("===============");
+  }
+}
+
+void logCcs811Information(){
+  if (debug) {
+    Serial.println("==== CCS811 ====");
+    Serial.print("CCS811 CO2: ");
+    Serial.println(myCCS811.getCO2());
+    Serial.println("================");
+  }
+}
 
 void log(String message) {
   Serial.println(message);
