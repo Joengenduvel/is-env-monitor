@@ -14,13 +14,14 @@ const uint32_t connectTimeoutMs = 5000;
 CCS811 myCCS811(CCS811_ADDR);
 Adafruit_SCD30  scd30;
 
-ESP8266WebServer http_server(9090);
+const int port = 80; //9090
+ESP8266WebServer http_server(port);
 #include <ESP8266WebServer.h>
 
 bool ccs811Present = false;
 bool scd30Present = false;
 
-String newHostname = "Livingroom";
+String room = "Livingroom";
 
 
 // HTTP metrics endpoint
@@ -29,6 +30,17 @@ String newHostname = "Livingroom";
 #define PROM_NAMESPACE "office"
 
 int co2 = 0;
+bool connected = false;
+
+typedef struct EnvironmentData {
+  String sensorName;
+  bool hasTemperature;
+  bool hasHumidity;
+  bool hasCO2;
+  int temperature;
+  int humidity;
+  int CO2;
+};
 
 void setup() {
 
@@ -36,7 +48,7 @@ void setup() {
   Serial.println("\nInfo Support Environment Monitor 1.0");
 
   WiFi.persistent(false);
-  WiFi.hostname(newHostname.c_str());
+  WiFi.hostname(room.c_str());
   // Set WiFi to station mode
   WiFi.mode(WIFI_STA);
 
@@ -49,73 +61,106 @@ void setup() {
   if (myCCS811.begin())
   {
     ccs811Present = true;
+    Serial.println("CCS811 connected.");
   } else {
-    Serial.print("CCS811 error. Please check wiring.");
+    Serial.println("CCS811 error. Please check wiring.");
   }
-  
-  if (scd30.begin()){
+
+  if (scd30.begin()) {
     scd30Present = true;
+    Serial.println("scd30 connected.");
   } else {
-    Serial.print("scd30 not found. Please check wiring.");
+    Serial.println("scd30 not found. Please check wiring.");
   }
 
   if (!ccs811Present && !scd30Present) {
-    Serial.print("No Sensors found, going to sleep");
+    Serial.println("No Sensors found, going to sleep");
     gotoSleep();
   }
-
-  setup_http_server();
 }
 
 void loop() {
-  if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
-    //Set new hostname
-    WiFi.hostname(newHostname.c_str());
-    logConnectionStatus(true);
-    http_server.handleClient();
-  } else {
-    logConnectionStatus(false);
+  ensureConnection();
+  http_server.handleClient();
+  if (debug && micros() % (1000 * 1000 * 10) < 50) {
+    readSensors();
   }
-  delay(1000);
-}
-
-int readCo2() {
-  if (scd30Present) {
-    return readScd30();
-  }
-  if (ccs811Present) {
-    return readCo2Ccs811();
-  }
-  return 0;
-}
-
-int readCo2Ccs811() {
-
-  if (myCCS811.dataAvailable())
-  {
-    myCCS811.readAlgorithmResults();
-    logCcs811Information();
-    return myCCS811.getCO2();
-  } else if (myCCS811.checkForStatusError())
-  {
-    Serial.println("Failed to read ccs811 sensor!");
-    gotoSleep();
+  if (!debug && micros() % (1000 * 1000) < 50) {
+    EnvironmentData data = readSensors();
+    Serial.println(data.CO2);
   }
 }
 
-int readScd30() {
-  if (scd30Present && scd30.dataReady()) {
-    if (scd30.read()) {
-      logScd30Information();
-      return scd30.CO2;
+void ensureConnection() {
+  if (!connected) {
+    if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
+      connected = true;
+      WiFi.hostname(room.c_str());
+      logConnectionStatus();
+
+      setup_http_server();
     } else {
-      Serial.println("Failed to read scd30 sensor!");
-      gotoSleep();
+      connected = false;
+      http_server.close();
+      http_server.stop();
+      delay(1000);
     }
   }
 }
 
-void logConnectionStatus(bool connected) {
+EnvironmentData readSensors() {
+  EnvironmentData returnData;
+  if (ccs811Present) {
+    EnvironmentData data =  readCo2Ccs811();
+    logSensorData(data);
+    returnData = data;
+  }
+  if (scd30Present) {
+    EnvironmentData data =  readScd30();
+    logSensorData(data);
+    returnData = data;
+  }
+  return returnData;
+}
+
+EnvironmentData readCo2Ccs811() {
+  EnvironmentData data;
+  data.sensorName = "CCS811";
+
+  if (myCCS811.dataAvailable())
+  {
+    myCCS811.readAlgorithmResults();
+    data.hasCO2 = true;
+    data.CO2 = myCCS811.getCO2();
+    return data;
+  } else if (myCCS811.checkForStatusError())
+  {
+    Serial.println("Failed to read ccs811 sensor!");
+  }
+}
+
+EnvironmentData readScd30() {
+  EnvironmentData data = {};
+  data.sensorName = "SCD30";
+
+  if (scd30Present && scd30.dataReady()) {
+    if (scd30.read()) {
+      data.hasTemperature = true;
+      data.temperature = scd30.temperature;
+
+      data.hasHumidity = true;
+      data.humidity = scd30.relative_humidity;
+
+      data.hasCO2 = true;
+      data.CO2 = scd30.CO2;
+      return data;
+    } else {
+      Serial.println("Failed to read scd30 sensor!");
+    }
+  }
+}
+
+void logConnectionStatus() {
   if (debug) {
     if (connected) {
       Serial.printf("WiFi connected: %s @ %s as %s\n", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), WiFi.hostname().c_str());
@@ -133,14 +178,15 @@ void gotoSleep() {
 
 void setup_http_server() {
   char message[128];
-  log("Setting up HTTP server");
+  log("Setting up HTTP server @ " + port);
   http_server.on("/", HTTPMethod::HTTP_GET, handle_http_root);
   http_server.on(HTTP_METRICS_ENDPOINT, HTTPMethod::HTTP_GET, handle_http_metrics);
   http_server.onNotFound(handle_http_not_found);
-  http_server.begin();
+  http_server.begin(port);
 }
 
 void handle_http_root() {
+  Serial.println("root");
   static size_t const BUFSIZE = 256;
   static char const *response_template =
     "Prometheus ESP8266 DHT Exporter by HON95.\n"
@@ -161,47 +207,48 @@ void handle_http_metrics() {
     "# HELP " PROM_NAMESPACE "_info Metadata about the device.\n"
     "# TYPE " PROM_NAMESPACE "_info gauge\n"
     "# UNIT " PROM_NAMESPACE "_info \n"
-    PROM_NAMESPACE "_info{version=\"%s\",board=\"%s\",sensor=\"%s\"} 1\n"
+    PROM_NAMESPACE "_info{room=\"%s\"} 1\n"
     "# HELP " PROM_NAMESPACE "_air_co2 CO2 value.\n"
     "# TYPE " PROM_NAMESPACE "_air_co2 gauge\n"
-    "# UNIT " PROM_NAMESPACE "_air_co2 co2\n"
+    "# UNIT " PROM_NAMESPACE "_air_co2 ppm\n"
     PROM_NAMESPACE "_air_co2 %d\n";
 
 
   char response[BUFSIZE];
-  snprintf(response, BUFSIZE, response_template, "1", "ESP8266", "CO2", readCo2());
-           http_server.send(200, "text/plain; charset=utf-8", response);
-           log(response);
+  EnvironmentData data = readSensors();
+  snprintf(response, BUFSIZE, response_template, room, data.CO2);
+  http_server.send(200, "text/plain; charset=utf-8", response);
+  log(response);
 }
 
 void handle_http_not_found() {
   http_server.send(404, "text/plain; charset=utf-8", "Not found.");
 }
 
-void logScd30Information() {
-  if (debug){
-    Serial.println("==== SCD30 ====");
-    Serial.print("Temperature: ");
-    Serial.print(scd30.temperature);
-    Serial.println(" degrees C");
-    
-    Serial.print("Relative Humidity: ");
-    Serial.print(scd30.relative_humidity);
-    Serial.println(" %");
-    
-    Serial.print("CO2: ");
-    Serial.print(scd30.CO2, 3);
-    Serial.println(" ppm");
-    Serial.println("===============");
-  }
-}
-
-void logCcs811Information(){
+void logSensorData(EnvironmentData data) {
   if (debug) {
-    Serial.println("==== CCS811 ====");
-    Serial.print("CCS811 CO2: ");
-    Serial.println(myCCS811.getCO2());
-    Serial.println("================");
+    Serial.print("==== ");
+    Serial.print(data.sensorName);
+    Serial.println(" ====");
+
+    if (data.hasTemperature) {
+      Serial.print("Temperature: ");
+      Serial.print(scd30.temperature);
+      Serial.println(" degrees C");
+    }
+
+    if (data.hasHumidity) {
+      Serial.print("Relative Humidity: ");
+      Serial.print(scd30.relative_humidity);
+      Serial.println(" %");
+    }
+
+    if (data.hasCO2) {
+      Serial.print("CO2: ");
+      Serial.print(scd30.CO2, 3);
+      Serial.println(" ppm");
+    }
+    Serial.println("===============");
   }
 }
 

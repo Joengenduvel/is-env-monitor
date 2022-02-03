@@ -2,8 +2,8 @@ groups:
 - name: co2
   rules:
   - alert: HighCO2
-    expr: co2_air_co2 > 200
-    for: 1s
+    expr: office_air_co2 > 800
+    for: 1m
     labels:
       severity: page
     annotations:
