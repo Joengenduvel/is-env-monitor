@@ -5,12 +5,21 @@ volumes:
     grafana_data: {}
 
 services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+     - ./nginx.conf/:/etc/nginx/conf.d/:ro
+    ports:
+     - 80:80
+    depends_on:
+      - prometheus
+      - alertmanager
 
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts.yml:/etc/prometheus/alerts.yml:ro
     ports:
       - 9090:9090
     links:

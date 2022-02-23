@@ -14,7 +14,7 @@ const uint32_t connectTimeoutMs = 5000;
 CCS811 myCCS811(CCS811_ADDR);
 Adafruit_SCD30  scd30;
 
-const int port = 80; //9090
+const int port = 9090;
 ESP8266WebServer http_server(port);
 #include <ESP8266WebServer.h>
 
@@ -75,7 +75,7 @@ void setup() {
 
   if (!ccs811Present && !scd30Present) {
     Serial.println("No Sensors found, going to sleep");
-    gotoSleep();
+//    gotoSleep();
   }
 }
 
@@ -109,7 +109,7 @@ void ensureConnection() {
 }
 
 EnvironmentData readSensors() {
-  EnvironmentData returnData;
+  EnvironmentData returnData = {};
   if (ccs811Present) {
     EnvironmentData data =  readCo2Ccs811();
     logSensorData(data);
@@ -124,7 +124,7 @@ EnvironmentData readSensors() {
 }
 
 EnvironmentData readCo2Ccs811() {
-  EnvironmentData data;
+  EnvironmentData data = {};
   data.sensorName = "CCS811";
 
   if (myCCS811.dataAvailable())
@@ -163,7 +163,7 @@ EnvironmentData readScd30() {
 void logConnectionStatus() {
   if (debug) {
     if (connected) {
-      Serial.printf("WiFi connected: %s @ %s as %s\n", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), WiFi.hostname().c_str());
+      Serial.printf("WiFi connected: %s @ %s : %d as %s\n", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), port, WiFi.hostname().c_str());
     }
     else {
       Serial.println("WiFi not connected!");
@@ -233,19 +233,19 @@ void logSensorData(EnvironmentData data) {
 
     if (data.hasTemperature) {
       Serial.print("Temperature: ");
-      Serial.print(scd30.temperature);
+      Serial.print(data.temperature);
       Serial.println(" degrees C");
     }
 
     if (data.hasHumidity) {
       Serial.print("Relative Humidity: ");
-      Serial.print(scd30.relative_humidity);
+      Serial.print(data.humidity);
       Serial.println(" %");
     }
 
     if (data.hasCO2) {
       Serial.print("CO2: ");
-      Serial.print(scd30.CO2, 3);
+      Serial.print(data.CO2, 3);
       Serial.println(" ppm");
     }
     Serial.println("===============");
