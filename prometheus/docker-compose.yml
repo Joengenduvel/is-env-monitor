@@ -14,6 +14,7 @@ services:
     depends_on:
       - prometheus
       - alertmanager
+    restart: always
 
   prometheus:
     image: prom/prometheus

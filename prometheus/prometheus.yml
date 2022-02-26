@@ -10,17 +10,81 @@ global:
 # Here it's Prometheus itself.
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  - job_name: 'environment'
+  - job_name: 'seminar'
 
     # Override the global default and scrape targets from this job every 5 seconds.
     scrape_interval: 5s
 
     static_configs:
       - targets: ['192.168.72.101:9090']
-  - job_name: 'monitoring'
+
+  - job_name: 'sybase'
 
     # Override the global default and scrape targets from this job every 5 seconds.
     scrape_interval: 5s
+
+    static_configs:
+      - targets: ['192.168.72.102:9090']
+
+
+  - job_name: 'assembly'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['192.168.72.103:9090']
+
+
+  - job_name: 'fortran'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['192.168.72.104:9090']
+
+
+  - job_name: 'basic'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['192.168.72.105:9090']
+      
+
+  - job_name: 'meeting1'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['192.168.72.106:9090']
+
+
+  - job_name: 'meeting2'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['192.168.72.107:9090']
+
+
+  - job_name: 'meeting3'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['192.168.72.108:9090']
+
+      
+  - job_name: 'monitoring'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 1m
 
     static_configs:
       - targets: ['prometheus:9090','alertmanager:9093']
