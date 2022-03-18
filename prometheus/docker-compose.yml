@@ -21,6 +21,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./alerts.yml:/etc/prometheus/alerts.yml:ro
+      - /var/prometheus:/prometheus
     ports:
       - 9090:9090
     links:
@@ -31,4 +32,14 @@ services:
     image: prom/alertmanager
     ports:
       - 9091:9093
+    restart: always
+  
+  grafana:
+    image: grafana/grafana
+    volumes:
+    - ./grafana_data:/var/lib/grafana
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
     restart: always
